@@ -1,5 +1,6 @@
 from django.db import models
 from django.conf import settings
+from django.utils import timezone
 from fields.models import Field
 
 class Booking(models.Model):
@@ -27,9 +28,15 @@ class Booking(models.Model):
     total_price = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="Total Biaya")
     status = models.CharField(max_length=25, choices=STATUS_CHOICES, default='PENDING', verbose_name="Status Reservasi")
     payment_proof = models.ImageField(upload_to='payments/', blank=True, null=True, verbose_name="Bukti Pembayaran")
+    payment_deadline = models.DateTimeField(blank=True, null=True, verbose_name="Batas Waktu Pembayaran")
     
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    def save(self, *args, **kwargs):
+        if not self.pk and not self.payment_deadline:
+            self.payment_deadline = timezone.now() + timezone.timedelta(hours=1)
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return f"{self.user.email} | {self.field.name} | {self.booking_date}"
