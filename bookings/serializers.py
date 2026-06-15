@@ -5,6 +5,9 @@ from django.db.models import Q
 from datetime import datetime, date
 from decimal import Decimal
 
+# ==========================================
+# 1. SERIALIZER UTAMA (CREATE BOOKING)
+# ==========================================
 class BookingSerializer(serializers.ModelSerializer):
     class Meta:
         model = Booking
@@ -21,7 +24,6 @@ class BookingSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError({"end_time": "Jam selesai harus lebih besar dari jam mulai."})
         
         # 2. Algoritma Anti Double-Booking (Mencari irisan waktu)
-        # Rumus irisan: (Start_Baru < End_Lama) AND (End_Baru > Start_Lama)
         overlapping_bookings = Booking.objects.filter(
             field=data['field'],
             booking_date=data['booking_date'],
@@ -56,10 +58,29 @@ class BookingSerializer(serializers.ModelSerializer):
         total_price = price_per_hour * Decimal(str(duration_hours))
 
         # 5. Simpan ke Database
-        # Status akan otomatis 'PENDING' dari default model
         booking = Booking.objects.create(
-            user=self.context['request'].user, # Ekstrak user dari token JWT
+            user=self.context['request'].user, 
             total_price=total_price,
             **validated_data
         )
         return booking
+
+
+# ==========================================
+# 2. SERIALIZER KHUSUS (UPLOAD BUKTI TRANSFER)
+# ==========================================
+class PaymentProofSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Booking
+        # Serializer ini SANGAT DIBATASI, hanya membuka akses ke kolom gambar.
+        fields = ['payment_proof']
+
+    def update(self, instance, validated_data):
+        # 1. Simpan gambar yang diunggah
+        instance.payment_proof = validated_data.get('payment_proof', instance.payment_proof)
+        
+        # 2. LOGIKA KRITIS: Pindahkan status agar selamat dari Auto-Cancel
+        instance.status = 'WAITING_CONFIRMATION'
+        
+        instance.save()
+        return instance
