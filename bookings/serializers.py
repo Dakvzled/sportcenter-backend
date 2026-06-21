@@ -13,7 +13,7 @@ class BookingSerializer(serializers.ModelSerializer):
         model = Booking
         fields = [
             'id', 'field', 'booking_date', 'start_time', 'end_time', 
-            'participants_count', 'notes', 'total_price', 'status'
+            'participants_count', 'notes', 'total_price', 'status', 'payment_deadline'
         ]
         # Kolom ini dikunci agar tidak bisa dimanipulasi manual oleh user dari frontend
         read_only_fields = ['id', 'total_price', 'status'] 
