@@ -40,10 +40,12 @@ INSTALLED_APPS = [
     'rest_framework',
     'users',
     'fields',
+    'corsheaders',
     'bookings',
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -136,3 +138,5 @@ REST_FRAMEWORK = {
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ),
 }
+# Konfigurasi CORS
+CORS_ALLOW_ALL_ORIGINS = True
