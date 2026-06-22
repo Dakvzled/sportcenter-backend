@@ -1,21 +1,22 @@
 from rest_framework import serializers
-from .models import Booking
 from django.contrib.auth import get_user_model
-from fields.models import Field
 from django.db.models import Q
 from datetime import datetime, date
 from decimal import Decimal
 
+from .models import Booking
+from fields.models import Field
+
+User = get_user_model()
 
 class BookingSerializer(serializers.ModelSerializer):
     class Meta:
         model = Booking
         fields = [
-            'id', 'field', 'payment_proof','booking_date', 'start_time', 'end_time', 
+            'id', 'field', 'payment_proof', 'booking_date', 'start_time', 'end_time', 
             'participants_count', 'notes', 'total_price', 'status', 'payment_deadline'
         ]
-
-        read_only_fields = ['id', 'total_price', 'status'] 
+        read_only_fields = ['id', 'total_price', 'status', 'payment_deadline', 'payment_proof'] 
 
     def validate(self, data):
         # 1. Validasi Logika Waktu
@@ -63,8 +64,14 @@ class BookingSerializer(serializers.ModelSerializer):
             **validated_data
         )
         return booking
+    
 
-#aplod bukti
+class AvailabilitySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Booking
+        fields = ['start_time', 'end_time', 'status']
+
+
 class PaymentProofSerializer(serializers.ModelSerializer):
     class Meta:
         model = Booking
@@ -72,13 +79,11 @@ class PaymentProofSerializer(serializers.ModelSerializer):
 
     def update(self, instance, validated_data):
         instance.payment_proof = validated_data.get('payment_proof', instance.payment_proof)
-        
         instance.status = 'WAITING_CONFIRMATION'
-        
         instance.save()
         return instance
     
-User = get_user_model()
+
 class RegisterSerializer(serializers.ModelSerializer):
     class Meta:
         model = User

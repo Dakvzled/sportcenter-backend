@@ -1,32 +1,17 @@
-# Python & Lingkungan Virtual
-__pycache__/
-*.py[cod]
-*$py.class
+output/
 venv/
-env/
-.venv/
-
-# Django
-*.log
-local_settings.py
-db.sqlite3
-db.sqlite3-journal
-
-# File Media (Upload User)
-media/
-/media
-*/media/
-media/
-*.sqlite3
-
-# Python files
-__pycache__/
-*.pyc
-venv/
-# OS Files
-.DS_Store
-Thumbs.db
-
-# Konfigurasi IDE
-.vscode/
+temp/
+.rpa/
 .idea/
+.ipynb_checkpoints/
+*/.ipynb_checkpoints/*
+.virtual_documents/
+*/.virtual_documents/*
+.vscode
+.DS_Store
+*.pyc
+*.zip
+*/work-items-out/*
+testrun/*
+.~lock*
+*.pkl

@@ -7,13 +7,15 @@ from .views import (
     UploadPaymentProofView,       
     AdminBookingListView,         
     AdminBookingStatusUpdateView,
-    RegisterAPIView
+    RegisterAPIView,
+    FieldAvailabilityView
+    
 )
 
 urlpatterns = [
     path('register/', RegisterAPIView.as_view(), name='register'),
 
-   
+    path('availability/', FieldAvailabilityView.as_view(), name='field-availability'),
     path('', BookingCreateListView.as_view(), name='booking-list-create'),
     path('<int:pk>/', BookingDetailUpdateView.as_view(), name='booking-detail-update'),
     path('<int:pk>/cancel/', BookingCancelView.as_view(), name='booking-cancel'),

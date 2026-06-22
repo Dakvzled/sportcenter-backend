@@ -5,7 +5,8 @@ from rest_framework.parsers import MultiPartParser, FormParser
 from django.contrib.auth import get_user_model
 
 from .models import Booking
-from .serializers import BookingSerializer, PaymentProofSerializer, RegisterSerializer
+# 🔥 PERBAIKAN: Tambahkan AvailabilitySerializer pada import di bawah ini
+from .serializers import BookingSerializer, PaymentProofSerializer, RegisterSerializer, AvailabilitySerializer
 
 # Mengambil model User aktif di Django
 User = get_user_model()
@@ -17,6 +18,33 @@ class RegisterAPIView(generics.CreateAPIView):
     queryset = User.objects.all()
     permission_classes = [AllowAny] # Terbuka untuk publik
     serializer_class = RegisterSerializer
+
+
+# ==========================================
+# FITUR CEK KETERSEDIAAN JADWAL (PUBLIK)
+# ==========================================
+# 🔥 PERBAIKAN: Kelas ini wajib ada agar React bisa mengecat merah jam yang sudah dipesan
+class FieldAvailabilityView(generics.ListAPIView):
+    serializer_class = AvailabilitySerializer
+    permission_classes = [AllowAny]  # Siapa saja bisa akses untuk cek jadwal
+
+    def get_queryset(self):
+        # Memicu pembersihan otomatis untuk booking yang kedaluwarsa
+        Booking.objects.update_expired_bookings()
+        
+        # Mengambil semua booking dari seluruh user
+        queryset = Booking.objects.all()
+        
+        # Mengambil parameter filter dari URL parameter (?field=...&date=...)
+        field_id = self.request.query_params.get('field')
+        date_str = self.request.query_params.get('date')
+        
+        if field_id:
+            queryset = queryset.filter(field_id=field_id)
+        if date_str:
+            queryset = queryset.filter(booking_date=date_str)
+            
+        return queryset
 
 
 # ==========================================
