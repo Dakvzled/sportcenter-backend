@@ -1,7 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser, BaseUserManager
 
-# --- TAMBAHKAN MANAJER INI ---
+
 class CustomUserManager(BaseUserManager):
     def create_user(self, email, password=None, **extra_fields):
         if not email:
@@ -41,7 +41,7 @@ class CustomUser(AbstractUser):
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = [] 
 
-    # --- DAFTARKAN MANAJER DI SINI ---
+    
     objects = CustomUserManager()
     # ---------------------------------
 

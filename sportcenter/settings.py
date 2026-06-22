@@ -81,9 +81,9 @@ WSGI_APPLICATION = 'sportcenter.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'db_sportcenter', # Nama database yang Anda buat di Laragon
-        'USER': 'root',           # Username default MySQL Laragon/XAMPP
-        'PASSWORD': '',           # Kosongkan jika Anda tidak set password di Laragon
+        'NAME': 'db_sportcenter', 
+        'USER': 'root',          
+        'PASSWORD': '',           
         'HOST': '127.0.0.1',
         'PORT': '3306',
     }

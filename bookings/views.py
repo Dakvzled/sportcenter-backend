@@ -1,9 +1,23 @@
 from rest_framework import generics, status
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated, IsAdminUser
-from rest_framework.parsers import MultiPartParser, FormParser # <-- TAMBAHAN BARU
+from rest_framework.permissions import IsAuthenticated, IsAdminUser, AllowAny
+from rest_framework.parsers import MultiPartParser, FormParser
+from django.contrib.auth import get_user_model
+
 from .models import Booking
-from .serializers import BookingSerializer, PaymentProofSerializer # <-- TAMBAHAN BARU
+from .serializers import BookingSerializer, PaymentProofSerializer, RegisterSerializer
+
+# Mengambil model User aktif di Django
+User = get_user_model()
+
+# ==========================================
+# FITUR REGISTRASI PENGGUNA BARU
+# ==========================================
+class RegisterAPIView(generics.CreateAPIView):
+    queryset = User.objects.all()
+    permission_classes = [AllowAny] # Terbuka untuk publik
+    serializer_class = RegisterSerializer
+
 
 # ==========================================
 # GOLONGAN USER BIASA (CLIENT-SIDE - FR-07, FR-08, FR-09, FR-10)
@@ -20,14 +34,15 @@ class BookingCreateListView(generics.ListCreateAPIView):
         return Booking.objects.filter(user=self.request.user).order_by('-created_at')
 
 
-# 2. Menangani Detail dan Update Biasa
-class BookingDetailUpdateView(generics.RetrieveUpdateAPIView):
+# 2. Menangani Detail, Update Biasa, dan Hapus (DELETE)
+class BookingDetailUpdateView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = BookingSerializer
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        # Bersihkan juga saat user melihat detail spesifik sebuah booking
+        # Bersihkan juga saat user melihat, mengubah, atau menghapus detail spesifik
         Booking.objects.update_expired_bookings()
+        # Memastikan pengguna hanya bisa memodifikasi/menghapus booking milik mereka sendiri
         return Booking.objects.filter(user=self.request.user)
 
 
@@ -94,7 +109,7 @@ class AdminBookingStatusUpdateView(generics.UpdateAPIView):
         booking = self.get_object()
         new_status = request.data.get('status')
 
-        if new_status in ['CONFIRMED', 'PAYMENT_REJECTED', 'CANCELLED']: # <-- Disesuaikan dengan model Anda
+        if new_status in ['CONFIRMED', 'PAYMENT_REJECTED', 'CANCELLED']: 
             booking.status = new_status
             booking.save()
             return Response(

@@ -3,7 +3,7 @@ from django.conf import settings
 from fields.models import Field
 from django.utils import timezone
 
-# --- TAMBAHKAN CUSTOM QUERYSET UNTUK AUTO-CANCEL ---
+
 class BookingQuerySet(models.QuerySet):
     def update_expired_bookings(self):
         """
@@ -42,7 +42,7 @@ class Booking(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
-    # Daftarkan objek manager baru ke dalam model
+
     objects = BookingQuerySet.as_manager()
 
     def save(self, *args, **kwargs):

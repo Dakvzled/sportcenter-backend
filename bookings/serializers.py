@@ -1,21 +1,20 @@
 from rest_framework import serializers
 from .models import Booking
+from django.contrib.auth import get_user_model
 from fields.models import Field
 from django.db.models import Q
 from datetime import datetime, date
 from decimal import Decimal
 
-# ==========================================
-# 1. SERIALIZER UTAMA (CREATE BOOKING)
-# ==========================================
+
 class BookingSerializer(serializers.ModelSerializer):
     class Meta:
         model = Booking
         fields = [
-            'id', 'field', 'booking_date', 'start_time', 'end_time', 
+            'id', 'field', 'payment_proof','booking_date', 'start_time', 'end_time', 
             'participants_count', 'notes', 'total_price', 'status', 'payment_deadline'
         ]
-        # Kolom ini dikunci agar tidak bisa dimanipulasi manual oleh user dari frontend
+
         read_only_fields = ['id', 'total_price', 'status'] 
 
     def validate(self, data):
@@ -65,22 +64,32 @@ class BookingSerializer(serializers.ModelSerializer):
         )
         return booking
 
-
-# ==========================================
-# 2. SERIALIZER KHUSUS (UPLOAD BUKTI TRANSFER)
-# ==========================================
+#aplod bukti
 class PaymentProofSerializer(serializers.ModelSerializer):
     class Meta:
         model = Booking
-        # Serializer ini SANGAT DIBATASI, hanya membuka akses ke kolom gambar.
         fields = ['payment_proof']
 
     def update(self, instance, validated_data):
-        # 1. Simpan gambar yang diunggah
         instance.payment_proof = validated_data.get('payment_proof', instance.payment_proof)
         
-        # 2. LOGIKA KRITIS: Pindahkan status agar selamat dari Auto-Cancel
         instance.status = 'WAITING_CONFIRMATION'
         
         instance.save()
         return instance
+    
+User = get_user_model()
+class RegisterSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['email', 'password']
+        # Pastikan password tidak pernah dikirim balik (read) di respons API
+        extra_kwargs = {'password': {'write_only': True}}
+
+    def create(self, validated_data):
+        # Gunakan create_user agar password otomatis di-enkripsi (hashing)
+        user = User.objects.create_user(
+            email=validated_data['email'],
+            password=validated_data['password']
+        )
+        return user

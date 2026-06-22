@@ -19,7 +19,6 @@ class RegisterSerializer(serializers.ModelSerializer):
         return attrs
 
     def create(self, validated_data):
-        # Buang password_confirm sebelum disimpan karena tidak ada kolomnya di tabel
         validated_data.pop('password_confirm')
         
         # FR-01: Gunakan create_user agar password di-hash secara otomatis
@@ -28,6 +27,6 @@ class RegisterSerializer(serializers.ModelSerializer):
             password=validated_data['password'],
             first_name=validated_data['first_name'],
             phone_number=validated_data['phone_number'],
-            role='USER' # Paksa role sebagai USER (bukan admin) untuk registrasi umum
+            role='USER' 
         )
         return user
